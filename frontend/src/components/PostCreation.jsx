@@ -24,13 +24,19 @@ const PostCreation = ({ user }) => {
 			queryClient.invalidateQueries({ queryKey: ["posts"] });
 		},
 		onError: (err) => {
-			toast.error(err.response.data.message || "Failed to create post");
+			toast.error(err.response?.data?.message || "Failed to create post");
 		},
 	});
 
 	const handlePostCreation = async () => {
 		try {
-			const postData = { content };
+			//  Validation: Require content or image
+			if (!content.trim() && !image) {
+				toast.error("Please write something or upload an image before posting.");
+				return;
+			}
+
+			const postData = { content: content.trim() };
 			if (image) postData.image = await readFileAsDataURL(image);
 
 			createPostMutation(postData);
@@ -67,7 +73,11 @@ const PostCreation = ({ user }) => {
 	return (
 		<div className='bg-secondary rounded-lg shadow mb-4 p-4'>
 			<div className='flex space-x-3'>
-				<img src={user.profilePicture || "/avatar.png"} alt={user.name} className='size-12 rounded-full' />
+				<img
+					src={user.profilePicture || "/avatar.png"}
+					alt={user.name}
+					className='size-12 rounded-full'
+				/>
 				<textarea
 					placeholder="What's on your mind?"
 					className='w-full p-3 rounded-lg bg-base-100 hover:bg-base-200 focus:bg-base-200 focus:outline-none resize-none transition-colors duration-200 min-h-[100px]'
@@ -92,9 +102,9 @@ const PostCreation = ({ user }) => {
 				</div>
 
 				<button
-					className='bg-primary text-white rounded-lg px-4 py-2 hover:bg-primary-dark transition-colors duration-200'
+					className='bg-primary text-white rounded-lg px-4 py-2 hover:bg-primary-dark transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
 					onClick={handlePostCreation}
-					disabled={isPending}
+					disabled={isPending || (!content.trim() && !image)}
 				>
 					{isPending ? <Loader className='size-5 animate-spin' /> : "Share"}
 				</button>
@@ -102,4 +112,5 @@ const PostCreation = ({ user }) => {
 		</div>
 	);
 };
+
 export default PostCreation;

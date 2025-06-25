@@ -16,10 +16,15 @@ export const getFeedPosts = async (req, res) => {
 		res.status(500).json({ message: "Server error" });
 	}
 };
-
 export const createPost = async (req, res) => {
 	try {
 		const { content, image } = req.body;
+
+		// ✅ Validation: at least content or image is required
+		if ((!content || content.trim() === "") && !image) {
+			return res.status(400).json({ message: "Post content or image is required" });
+		}
+
 		let newPost;
 
 		if (image) {
@@ -44,6 +49,7 @@ export const createPost = async (req, res) => {
 		res.status(500).json({ message: "Server error" });
 	}
 };
+
 
 export const deletePost = async (req, res) => {
 	try {
